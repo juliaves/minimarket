@@ -1,2 +1,2 @@
-# minimarket
-Minimarket workshop
+# Minimarket workshop back-end project
+
