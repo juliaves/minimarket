@@ -1,4 +1,4 @@
-package com.nortal.workshop.minimarket.model;
+package com.nortal.workshop.minimarket.model.rest;
 
 import lombok.Data;
 

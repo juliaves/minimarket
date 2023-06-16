@@ -19,21 +19,21 @@ public class DataLoader implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
-    repository.save(new Product(1L, "Apple juice", 15.79, ProductCategory.DRINKS.name(), "100% natural juice"));
-    repository.save(new Product(2L, "Orange juice", 10.79, ProductCategory.DRINKS.name(), "100% natural juice"));
-    repository.save(new Product(3L, "Sprite", 35.59, ProductCategory.DRINKS.name(), null));
-    repository.save(new Product(4L, "Fanta", 25.59, ProductCategory.DRINKS.name(), null));
+    repository.save(new Product(1L, "Apple juice", 15.7, ProductCategory.DRINKS.name(), "100% natural juice"));
+    repository.save(new Product(2L, "Orange juice", 10.7, ProductCategory.DRINKS.name(), "100% natural juice"));
+    repository.save(new Product(3L, "Sprite", 35.5, ProductCategory.DRINKS.name(), null));
+    repository.save(new Product(4L, "Fanta", 25.5, ProductCategory.DRINKS.name(), null));
     repository.save(new Product(5L, "Lollipop", 46.2, ProductCategory.SWEETS.name(), "Different colors"));
-    repository.save(new Product(6L, "Chocolate", 67.59, ProductCategory.SWEETS.name(), "Milk chocolate with almonds"));
-    repository.save(new Product(7L, "Apple", 90.35, ProductCategory.FRUITS.name(), null));
+    repository.save(new Product(6L, "Chocolate", 67.5, ProductCategory.SWEETS.name(), "Milk chocolate with almonds"));
+    repository.save(new Product(7L, "Apple", 90.3, ProductCategory.FRUITS.name(), null));
     repository.save(new Product(8L, "Orange", 25.4, ProductCategory.FRUITS.name(), "(Egypt)"));
     repository.save(new Product(9L, "Kiwi", 78.5, ProductCategory.FRUITS.name(), "(Greece)"));
-    repository.save(new Product(10L, "Pear", 9.3, ProductCategory.FRUITS.name(), null));
-    repository.save(new Product(11L, "Banana", 24.35, ProductCategory.FRUITS.name(), "(Panama)"));
-    repository.save(new Product(12L, "Potato", 11.45, ProductCategory.VEGETABLES.name(), null));
-    repository.save(new Product(13L, "Carrot", 36.59, ProductCategory.VEGETABLES.name(), null));
-    repository.save(new Product(14L, "Broccoli", 78.75, ProductCategory.VEGETABLES.name(), "(Italy)"));
-    repository.save(new Product(15L, "Onion", 6.25, ProductCategory.VEGETABLES.name(), null));
+    repository.save(new Product(10L, "Pear", 9.3, ProductCategory.FRUITS.name(), " "));
+    repository.save(new Product(11L, "Banana", 24.3, ProductCategory.FRUITS.name(), "(Panama)"));
+    repository.save(new Product(12L, "Potato", 11.4, ProductCategory.VEGETABLES.name(), ""));
+    repository.save(new Product(13L, "Carrot", 36.5, ProductCategory.VEGETABLES.name(), null));
+    repository.save(new Product(14L, "Broccoli", 78.7, ProductCategory.VEGETABLES.name(), "(Italy)"));
+    repository.save(new Product(15L, "Onion", 6.2, ProductCategory.VEGETABLES.name(), null));
     repository.save(new Product(16L, "Tomato", 11.2, ProductCategory.VEGETABLES.name(), null));
   }
 }

@@ -1,17 +1,20 @@
 package com.nortal.workshop.minimarket.service;
 
-import com.nortal.workshop.minimarket.model.Purchase;
-import com.nortal.workshop.minimarket.model.PurchaseFilterParams;
-import com.nortal.workshop.minimarket.model.PurchaseWithProducts;
+import com.nortal.workshop.minimarket.model.rest.PurchaseDTO;
 
 import java.util.List;
 
 public interface PurchaseService {
 
-  void save(PurchaseWithProducts purchaseWithProducts);
+  void save(PurchaseDTO purchaseDTO);
 
-  List<PurchaseWithProducts> getAll();
+  List<PurchaseDTO> getAll();
 
-  List<PurchaseWithProducts> searchPurchases(PurchaseFilterParams searchParams);
+  List<PurchaseDTO> searchPurchases(String firstName,
+                                    String lastName,
+                                    String productName,
+                                    Double maxPrice,
+                                    Double maxTotal,
+                                    Integer maxQuantity);
 
 }

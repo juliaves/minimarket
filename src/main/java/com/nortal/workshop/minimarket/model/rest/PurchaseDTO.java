@@ -1,18 +1,19 @@
-package com.nortal.workshop.minimarket.model;
+package com.nortal.workshop.minimarket.model.rest;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.nortal.workshop.minimarket.model.Purchase;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
-public class PurchaseWithProducts extends Purchase {
-  private List<CartProduct> cartProducts;
+public class PurchaseDTO extends Purchase {
+  private List<CartProductDTO> cartProducts;
 
   public boolean validate(){
     return StringUtils.isNotEmpty(this.getFirstName())

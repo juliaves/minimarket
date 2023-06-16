@@ -1,5 +1,6 @@
 package com.nortal.workshop.minimarket.service.impl;
 
+import com.nortal.workshop.minimarket.exceptions.CustomException;
 import com.nortal.workshop.minimarket.model.Product;
 import com.nortal.workshop.minimarket.repository.ProductRepository;
 import com.nortal.workshop.minimarket.service.ProductService;
@@ -21,11 +22,6 @@ public class ProductServiceImpl implements ProductService {
   }
 
   @Override
-  public Product get(Long productId) {
-    return productRepository.getReferenceById(productId);
-  }
-
-  @Override
   public List<Product> findProducts(String category, Double maxPrice) {
     if (StringUtils.isEmpty(category)) {
       if (maxPrice != null) {
@@ -38,23 +34,11 @@ public class ProductServiceImpl implements ProductService {
 
   @Override
   public void saveOrUpdate(Product product) {
-    productRepository.save(product);
-  }
-
-  @Override
-  public Product findProduct(Long productId, String productName, Double maxPrice) {
-    Product product;
-    if (maxPrice != null) {
-      product = productRepository.findByIdAndNameContainingIgnoreCaseAndPriceIsLessThanEqual(
-          productId,
-          StringUtils.defaultIfEmpty(productName, "").trim(),
-          maxPrice);
-    } else {
-      product = productRepository.findByIdAndNameContainingIgnoreCase(
-          productId,
-          StringUtils.defaultIfEmpty(productName, "").trim());
+    try {
+      productRepository.save(product);
+    } catch (Exception ex) {
+      throw new CustomException("Something went wrong: " + ex.getMessage());
     }
-    return product;
   }
 
 }

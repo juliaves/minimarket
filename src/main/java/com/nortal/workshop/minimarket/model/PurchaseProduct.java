@@ -15,20 +15,21 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table
+@Table(name="purchase_product")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class PurchaseProduct implements Serializable {
   @Id
   @GeneratedValue(strategy = GenerationType.SEQUENCE)
-  @Column(updatable = false, nullable = false)
+  @Column(name="id", updatable = false, nullable = false)
   private Long id;
   @ManyToOne
   @JoinColumn(name="purchase_id", nullable=false)
   private Purchase purchase;
-  @Column(nullable = false)
-  private Long productId;
-  @Column(nullable = false)
+  @ManyToOne
+  @JoinColumn(name="product_id", nullable=false)
+  private Product product;
+  @Column(name="quantity", nullable = false)
   private Integer quantity;
 }
