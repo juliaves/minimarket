@@ -23,7 +23,7 @@ public class ProductResource {
   private ProductService productService;
 
   @GetMapping(produces = "application/json")
-  public List<Product> getAllProducts() {
+  public List<ProductDTO> getAllProducts() {
     return productService.getAll();
   }
 

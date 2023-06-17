@@ -2,12 +2,14 @@ package com.nortal.workshop.minimarket.service.impl;
 
 import com.nortal.workshop.minimarket.exceptions.CustomException;
 import com.nortal.workshop.minimarket.model.Product;
+import com.nortal.workshop.minimarket.model.rest.ProductDTO;
 import com.nortal.workshop.minimarket.repository.ProductRepository;
 import com.nortal.workshop.minimarket.service.ProductService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service("productService")
@@ -17,8 +19,24 @@ public class ProductServiceImpl implements ProductService {
   private ProductRepository productRepository;
 
   @Override
-  public List<Product> getAll() {
-    return productRepository.findAll();
+  public List<ProductDTO> getAll() {
+    List<Product> products = productRepository.findAll();
+    List<ProductDTO> productDTOs = new ArrayList<>();
+    for (Product product : products) {
+      ProductDTO productDTO = convertToProductDTO(product);
+      productDTOs.add(productDTO);
+    }
+    return productDTOs;
+  }
+
+  private ProductDTO convertToProductDTO(Product product) {
+    ProductDTO productDTO = new ProductDTO();
+    productDTO.setId(product.getId());
+    productDTO.setName(product.getName());
+    productDTO.setPrice(product.getPrice());
+    productDTO.setCategory(product.getCategory());
+    productDTO.setDescription(product.getDescription());
+    return productDTO;
   }
 
   @Override
@@ -27,7 +45,7 @@ public class ProductServiceImpl implements ProductService {
       if (maxPrice != null) {
         return productRepository.findByPriceIsLessThanEqual(maxPrice);
       }
-      return getAll();
+      return productRepository.findAll();
     }
     return productRepository.findByCategoryAndPriceIsLessThanEqual(category, maxPrice);
   }
