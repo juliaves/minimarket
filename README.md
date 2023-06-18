@@ -19,6 +19,6 @@ cd minimarket
 ```
 and start the development server on your localhost:
 ```
-gradle bootRun
+gradlew bootRun
 ```
 Wait till the application server starts at `http://localhost:8085/`.
