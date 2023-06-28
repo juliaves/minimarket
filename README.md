@@ -5,7 +5,9 @@ This project was created for the _'Debugging and clean code'_ workshop.
 
 This project was developed using Java v11, Spring boot with H2 in-memory database and Gradle.
 
-Firstly install: [Java v11](https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html)  and [IntelliJ IDEA](https://www.jetbrains.com/idea/download/#section=windows)
+Firstly install Java, it can be [Java v11](https://www.oracle.com/java/technologies/javase/jdk11-archive-downloads.html) or later version. 
+
+Make sure, that you have [IntelliJ IDEA](https://www.jetbrains.com/idea/download/#section=windows).
 
 If you have Git installed then clone the project:
 ```  
