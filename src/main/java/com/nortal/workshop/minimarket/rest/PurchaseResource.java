@@ -37,12 +37,7 @@ public class PurchaseResource {
 
   @PostMapping(path = "/search",consumes = "application/json")
   public List<PurchaseDTO> searchPurchases(@NonNull @RequestBody PurchaseFilterParams searchParams) {
-    return purchaseService.searchPurchases(searchParams.getFirstName(),
-                                           searchParams.getLastName(),
-                                           searchParams.getProductName(),
-                                           searchParams.getMaxPrice(),
-                                           searchParams.getMaxTotal(),
-                                           searchParams.getMaxQuantity());
+    return purchaseService.searchPurchases(searchParams);
   }
 
 }

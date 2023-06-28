@@ -26,7 +26,7 @@ class ProductServiceImplTest {
   private ProductService productService = new ProductServiceImpl();
 
   @Test
-  void findProducts() {
+  void findProducts_byCategoryAndMaxPrice() {
     // Find by category and max price
     Long productId = 1L;
     String category = ProductCategory.FRUITS.name();
@@ -39,27 +39,33 @@ class ProductServiceImplTest {
     List<Product> result = productService.findProducts(category, maxPrice);
     Assertions.assertNotNull(result);
     validateProductsAreEqual(product1, result);
+  }
 
+  @Test
+  void findProducts_byMaxPrice(){
     // Find by max price
-    productId = 2L;
-    category = null;
-    maxPrice = 5.8;
+    Long productId = 2L;
+    String category = null;
+    Double maxPrice = 5.8;
     Product product2 = createProduct(productId);
     Mockito.when(productRepository.findByPriceIsLessThanEqual(maxPrice))
         .thenReturn(Collections.singletonList(product2));
 
-    result = productService.findProducts(category, maxPrice);
+    List<Product> result = productService.findProducts(category, maxPrice);
     Assertions.assertNotNull(result);
     validateProductsAreEqual(product2, result);
+  }
 
+  @Test
+  void findProducts_all(){
     // Find all
-    productId = 3L;
-    category = null;
-    maxPrice = null;
+    Long productId = 3L;
+    String category = null;
+    Double maxPrice = null;
     Product product3 = createProduct(productId);
     Mockito.when(productRepository.findAll()).thenReturn(Collections.singletonList(product3));
 
-    result = productService.findProducts(category, maxPrice);
+    List<Product> result = productService.findProducts(category, maxPrice);
     Assertions.assertNotNull(result);
     validateProductsAreEqual(product3, result);
   }

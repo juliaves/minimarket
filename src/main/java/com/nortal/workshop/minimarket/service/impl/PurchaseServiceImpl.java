@@ -5,9 +5,11 @@ import com.nortal.workshop.minimarket.model.Purchase;
 import com.nortal.workshop.minimarket.model.PurchaseProduct;
 import com.nortal.workshop.minimarket.model.rest.CartProductDTO;
 import com.nortal.workshop.minimarket.model.rest.PurchaseDTO;
+import com.nortal.workshop.minimarket.model.rest.PurchaseFilterParams;
 import com.nortal.workshop.minimarket.repository.PurchaseProductRepository;
 import com.nortal.workshop.minimarket.repository.PurchaseRepository;
 import com.nortal.workshop.minimarket.service.PurchaseService;
+import com.nortal.workshop.minimarket.util.ConvertUtil;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +18,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -32,142 +33,98 @@ public class PurchaseServiceImpl implements PurchaseService {
 
   @Override
   public void save(PurchaseDTO purchaseDTO) {
-    Purchase purchase = magic1(purchaseDTO);
-    purchase = purchaseRepository.save(purchase);
-
-    List<PurchaseProduct> purchaseProducts = new ArrayList<>();
-    for (CartProductDTO cartProduct : purchaseDTO.getCartProducts()) {
-      PurchaseProduct purchaseProduct = magic2(purchase, cartProduct);
-      purchaseProducts.add(purchaseProduct);
-    }
+    final Purchase purchase = purchaseRepository.save(ConvertUtil.convertToPurchase(purchaseDTO));
+    List<PurchaseProduct> purchaseProducts = purchaseDTO.getCartProducts()
+        .stream()
+        .map(cartProduct -> ConvertUtil.convertToPurchaseProduct(purchase, cartProduct))
+        .collect(Collectors.toList());
     purchaseProductRepository.saveAll(purchaseProducts);
-  }
-
-
-  private static Purchase magic1(PurchaseDTO purchaseDTO) {
-    Purchase purchase = new Purchase();
-    purchase.setDate(new Date());
-    purchase.setFirstName(purchaseDTO.getFirstName());
-    purchase.setLastName(purchaseDTO.getLastName());
-    purchase.setEmail(purchaseDTO.getEmail());
-    return purchase;
-  }
-
-  private static PurchaseProduct magic2(Purchase purchase, CartProductDTO cartProduct) {
-    PurchaseProduct purchaseProduct = new PurchaseProduct();
-    Product product = magic3(cartProduct);
-    purchaseProduct.setProduct(product);
-    purchaseProduct.setQuantity(cartProduct.getQuantity());
-    purchaseProduct.setPurchase(purchase);
-    return purchaseProduct;
-  }
-
-  private static Product magic3(CartProductDTO cartProduct) {
-    Product product = new Product();
-    product.setId(cartProduct.getId());
-    product.setName(cartProduct.getName());
-    product.setCategory(cartProduct.getCategory());
-    product.setPrice(cartProduct.getPrice());
-    product.setDescription(cartProduct.getDescription());
-    return product;
   }
 
   @Override
   public List<PurchaseDTO> getAll() {
     List<Purchase> allPurchases = purchaseRepository.findAll();
-    List<PurchaseDTO> purchasesWithProducts = new ArrayList<>();
     if (CollectionUtils.isEmpty(allPurchases)) {
-      return purchasesWithProducts;
+      return Collections.emptyList();
     }
-    allPurchases.forEach(p -> {
-      PurchaseDTO pp1 = new PurchaseDTO();
-      pp1.setId(p.getId());
-      pp1.setDate(p.getDate());
-      pp1.setEmail(p.getEmail());
-      pp1.setFirstName(p.getFirstName());
-      pp1.setLastName(p.getLastName());
+    List<PurchaseDTO> purchasesWithProducts = new ArrayList<>();
 
+    Map<Long, List<PurchaseProduct>> purchaseProductsMap = findAllPurchaseProducts(getAllPurchasesIds(allPurchases));
+    allPurchases.forEach(purchase -> {
+      PurchaseDTO purchaseDTO = ConvertUtil.convertToPurchaseDTO(purchase);
+      List<PurchaseProduct> purchaseProducts = purchaseProductsMap.get(purchase.getId());
       List<CartProductDTO> cartProducts = new ArrayList<>();
-      List<PurchaseProduct> purchaseProducts = purchaseProductRepository.findByPurchaseId(p.getId());
-      purchaseProducts.forEach(pp -> {
-        CartProductDTO cp = new CartProductDTO();
-        Product p1 = pp.getProduct();
-        cp.setId(p1.getId());
-        cp.setCategory(p1.getCategory());
-        cp.setName(p1.getName());
-        cp.setPrice(p1.getPrice());
-        cp.setDescription(p1.getDescription());
-        cp.setQuantity(pp.getQuantity());
-        cartProducts.add(cp);
-      });
-      pp1.setCartProducts(cartProducts);
-      purchasesWithProducts.add(pp1);
+      purchaseProducts.forEach(purchaseProduct -> cartProducts.add(ConvertUtil.convertToCartProductDTO(purchaseProduct.getProduct(),
+                                                                                           purchaseProduct.getQuantity())));
+      purchaseDTO.setCartProducts(cartProducts);
+      purchasesWithProducts.add(purchaseDTO);
     });
     return purchasesWithProducts;
   }
 
+  private List<Long> getAllPurchasesIds(List<Purchase> allPurchases) {
+    return allPurchases.stream().map(Purchase::getId).collect(Collectors.toList());
+  }
+
   @Override
-  public List<PurchaseDTO> searchPurchases(String firstName,
-                                           String lastName,
-                                           String productName,
-                                           Double maxPrice,
-                                           Double maxTotal,
-                                           Integer maxQuantity) {
-    List<Purchase> purchases = findPurchasesByFirstAndLastName(firstName, lastName);
+  public List<PurchaseDTO> searchPurchases(PurchaseFilterParams searchParams) {
+    List<Purchase> purchases = findPurchasesByFirstAndLastName(searchParams.getFirstName(), searchParams.getLastName());
     if (CollectionUtils.isEmpty(purchases)) {
       return Collections.emptyList();
     }
     List<PurchaseDTO> result = new ArrayList<>();
     for (Purchase purchase : purchases) {
-      List<PurchaseProduct> purchaseProducts;
-      if (maxQuantity == null) {
-        purchaseProducts = purchaseProductRepository.findByPurchaseId(purchase.getId());
-      } else {
-        purchaseProducts = purchaseProductRepository.findByPurchaseIdAndQuantityLessThanEqual(
-            purchase.getId(),
-            maxQuantity);
-      }
+      List<PurchaseProduct> purchaseProducts = getPurchaseProducts(searchParams, purchase);
       if (CollectionUtils.isEmpty(purchaseProducts)) {
         continue;
       }
-      PurchaseDTO purchaseDTO = new PurchaseDTO();
-      purchaseDTO.setId(purchase.getId());
-      purchaseDTO.setFirstName(purchase.getFirstName());
-      purchaseDTO.setLastName(purchase.getLastName());
-      purchaseDTO.setEmail(purchase.getEmail());
-      purchaseDTO.setDate(purchase.getDate());
-
-      List<CartProductDTO> cartProducts = new ArrayList<>();
-      for (PurchaseProduct purchaseProduct : purchaseProducts) {
-        Product product = null;
-        String trimmedProductName = getTrimmedStringValue(productName).toLowerCase();
-        if ((StringUtils.isEmpty(trimmedProductName) || purchaseProduct.getProduct().getName().toLowerCase().contains(trimmedProductName))
-            && (maxPrice == null
-            || ObjectUtils.compare(purchaseProduct.getProduct().getPrice(), maxPrice) <= 0)) {
-          product = purchaseProduct.getProduct();
-        }
-        if (product == null) {
-          continue;
-        }
-        CartProductDTO cartProduct = new CartProductDTO();
-        cartProduct.setId(product.getId());
-        cartProduct.setCategory(product.getCategory());
-        cartProduct.setName(product.getName());
-        cartProduct.setPrice(product.getPrice());
-        cartProduct.setDescription(product.getDescription());
-        cartProduct.setQuantity(purchaseProduct.getQuantity());
-        cartProducts.add(cartProduct);
+      List<CartProductDTO> cartProducts = getCartProductDTOs(searchParams, purchaseProducts);
+      if (CollectionUtils.isEmpty(cartProducts)) {
+        continue;
       }
-      if (!CollectionUtils.isEmpty(cartProducts)) {
-        double totalSum =
-            cartProducts.stream().mapToDouble(cartProduct -> cartProduct.getQuantity() * cartProduct.getPrice()).sum();
-        if (maxTotal == null || totalSum <= maxTotal) {
-          purchaseDTO.setCartProducts(cartProducts);
-          result.add(purchaseDTO);
-        }
+      double totalSum = getCartProductsTotalSum(cartProducts);
+      if (searchParams.getMaxTotal() == null || totalSum <= searchParams.getMaxTotal()) {
+        PurchaseDTO purchaseDTO = ConvertUtil.convertToPurchaseDTO(purchase);
+        purchaseDTO.setCartProducts(cartProducts);
+        result.add(purchaseDTO);
       }
     }
     return result;
+  }
+
+  private static double getCartProductsTotalSum(List<CartProductDTO> cartProducts) {
+    return cartProducts.stream().mapToDouble(cartProduct -> cartProduct.getQuantity() * cartProduct.getPrice()).sum();
+  }
+
+  private static List<CartProductDTO> getCartProductDTOs(PurchaseFilterParams searchParams, List<PurchaseProduct> purchaseProducts) {
+    List<CartProductDTO> cartProducts = new ArrayList<>();
+    for (PurchaseProduct purchaseProduct : purchaseProducts) {
+      Product product = isSuitableProduct(searchParams, purchaseProduct) ? purchaseProduct.getProduct() : null;
+      if (product == null) {
+        continue;
+      }
+      cartProducts.add(ConvertUtil.convertToCartProductDTO(product, purchaseProduct.getQuantity()));
+    }
+    return cartProducts;
+  }
+
+  private static boolean isSuitableProduct(PurchaseFilterParams searchParams, PurchaseProduct purchaseProduct) {
+    String trimmedProductName = getTrimmedStringValue(searchParams.getProductName());
+    return (StringUtils.isEmpty(trimmedProductName) || purchaseProduct.getProduct()
+        .getName()
+        .toLowerCase()
+        .contains(trimmedProductName.toLowerCase()))
+        && (searchParams.getMaxPrice() == null
+        || ObjectUtils.compare(purchaseProduct.getProduct().getPrice(), searchParams.getMaxPrice()) <= 0);
+  }
+
+  private List<PurchaseProduct> getPurchaseProducts(PurchaseFilterParams searchParams, Purchase purchase) {
+    if (searchParams.getMaxQuantity() == null) {
+      return purchaseProductRepository.findByPurchaseId(purchase.getId());
+    }
+    return purchaseProductRepository.findByPurchaseIdAndQuantityLessThanEqual(
+        purchase.getId(),
+        searchParams.getMaxQuantity());
   }
 
   private List<Purchase> findPurchasesByFirstAndLastName(String firstName, String lastName) {
